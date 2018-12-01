@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html" charset="utf-8" />
+    <title>Babylon - Getting Started</title>
+    <!--- Link to the last version of BabylonJS --->
+    <script src="js/cannon.js"></script>
+    <script src="js/babylon.js"></script>
+    <!---script src="https://cdn.babylonjs.com/babylon.max.js"></script--->
+    <script src="js/setupCamera.js"></script>
+    <script src="js/CharacterController.js"></script>
+    <!---script src="https://preview.babylonjs.com/babylon.js"></script--->
+    <!--- script src="js/oimo.js"></script> --->
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            // get the canvas DOM element
+            var canvas = document.getElementById('renderCanvas');
+
+            // load the 3D engine
+            var engine = new BABYLON.Engine(canvas, true);
+
+
+            // createScene function that creates and return the scene
+            var createScene = function () {
+                // create a basic BJS Scene object
+                var scene = new BABYLON.Scene(engine);
+                var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
+                var physicsPlugin = new BABYLON.CannonJSPlugin();
+                scene.enablePhysics(null, physicsPlugin);
+
+                var camera = setupCamera(scene, canvas);
+
+                // create a basic light, aiming 0,1,0 - meaning, to the sky
+                var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
+
+                var sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 2, scene);
+                sphere.material = new BABYLON.StandardMaterial("texture2", scene);
+                setInterval(function () {
+                    sphere.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+                }, 500);
+                sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
+                sphere.position.y = 2;
+
+                /*
+                var sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 2, scene);
+                sphere2.material = new BABYLON.StandardMaterial("texture2", scene);
+                setInterval(function () {
+                    sphere2.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+                }, 500);
+                sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
+                sphere2.position.y = 20;
+                sphere2.position.x = 1;
+                sphere2.position.z = 1;
+                */
+
+
+                // create a built-in "ground" shape;
+                var ground = BABYLON.Mesh.CreateGround('ground1', 30, 30, 2, scene);
+                ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 2.5, friction: 0.1 }, scene);
+                var x = 0; //-Math.PI / 16;
+                var y = 0;
+                var z = 0;//-Math.PI / 32;
+                ground.addRotation(x, y, z);
+
+                var border0 = BABYLON.Mesh.CreateBox("border0", 1, scene);
+                border0.scaling = new BABYLON.Vector3(.01, 1, 8);
+                border0.position.y = .5;
+                border0.position.x = -4.0;
+                border0.addRotation(-Math.PI / 16, 0, 0);
+                border0.checkCollisions = true;
+                border0.physicsImpostor = new BABYLON.PhysicsImpostor(border0, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
+
+                var border1 = BABYLON.Mesh.CreateBox("border1", 1, scene);
+                border1.scaling = new BABYLON.Vector3(.01, 1, 8);
+                border1.position.y = .5;
+                border1.position.x = 4.0;
+                border1.checkCollisions = true;
+                border1.physicsImpostor = new BABYLON.PhysicsImpostor(border1, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
+
+
+                var border3 = BABYLON.Mesh.CreateBox("border3", 1, scene);
+                border3.scaling = new BABYLON.Vector3(.01, 1, 8);
+                border3.position.y = .5;
+                border3.position.z = -4.0;
+                border3.addRotation(0, Math.PI / 2, 0)
+                border3.checkCollisions = true;
+                border3.physicsImpostor = new BABYLON.PhysicsImpostor(border3, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
+
+                var border4 = BABYLON.Mesh.CreateBox("border4", 1, scene);
+                border4.scaling = new BABYLON.Vector3(.01, 1, 8);
+                border4.position.y = .5;
+                border4.position.z = 4.0;
+                border4.addRotation(0, Math.PI / 2, 0)
+                border4.checkCollisions = true;
+                border4.physicsImpostor = new BABYLON.PhysicsImpostor(border4, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
+
+
+                /*
+                var customMesh = new BABYLON.Mesh("custom", scene);
+                customMesh.material = new BABYLON.StandardMaterial("texture2", scene);
+                customMesh.material.diffuseColor = new BABYLON.Color3(0, 0, 0);
+                var positions =
+                    [0, 2, 0,
+                    -1, -2, 0,
+                    3, -2, 0];
+                var indices = [0, 1, 2];
+                var vertexData = new BABYLON.VertexData();
+                vertexData.positions = positions;
+                vertexData.indices = indices;
+                vertexData.applyToMesh(customMesh);
+                customMesh.physicsImpostor = new BABYLON.PhysicsImpostor(customMesh, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.1, friction: 0.1 }, scene);
+                */
+
+
+                border0.parent = ground;
+                border1.parent = ground;
+                border3.parent = ground;
+                border4.parent = ground;
+                ground.position.y = -1;
+
+                //camera.lockedTarget = sphere; //version 2.5 onwards
+
+
+                // var newMesh = BABYLON.Mesh.MergeMeshes([ground, border0, border1, border3, border4], true);
+                // newMesh.physicsImpostor = new BABYLON.PhysicsImpostor(newMesh, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0 }, scene);
+                //  newMesh.addRotation(0, Math.PI / 2, 0);
+                //  newMesh.position.y = 2;
+
+
+
+                sphere.actionManager = new BABYLON.ActionManager(scene);
+                sphere.actionManager
+                    .registerAction(
+                        new BABYLON.InterpolateValueAction(
+                            BABYLON.ActionManager.OnPickTrigger,
+                            sphere,
+                            'visibility',
+                            0.0,
+                            1000
+                        )
+                    )
+                    .then(
+                        new BABYLON.InterpolateValueAction(
+                            BABYLON.ActionManager.OnPickTrigger,
+                            sphere,
+                            'visibility',
+                            1.0,
+                            1000
+                        )
+                    );
+
+
+                scene.actionManager = new BABYLON.ActionManager(scene);
+                scene.actionManager
+                    .registerAction(
+                        new BABYLON.ExecuteCodeAction(
+                            {
+                                trigger: BABYLON.ActionManager.OnKeyUpTrigger,
+                                parameter: 'x'
+                            },
+                            function () {
+                                sphere.visibility = 0;
+                                setTimeout(function () {
+                                    // debugger;
+                                    sphere.visibility = 1;
+                                }, 1000);
+                            }
+                        )
+                    );
+                scene.actionManager
+                    .registerAction(
+                        new BABYLON.ExecuteCodeAction(
+                            {
+                                trigger: BABYLON.ActionManager.OnKeyUpTrigger,
+                                parameter: 'z'
+                            },
+                            function () {
+                                sphere.rotate(BABYLON.Axis.Z, 1, BABYLON.Space.LOCAL);
+                            }
+                        )
+                    );
+
+                var moveVector = new BABYLON.Vector3(0, 0, 0);
+                var movestep = .05;
+                var rotstep = .05;
+
+                //document.addEventListener("keydown", onKeyDown, false);
+
+                var onKeyDown = function (event) {
+                    var key = event.keyCode;
+                    var ch = String.fromCharCode(key);
+                    debugger;
+                    switch (ch) {
+                        case "W":
+                            moveVector.z = movestep;
+                            sphere.moveWithCollisions(moveVector);
+                            break;
+                        case "A":
+                            sphere.rotate(BABYLON.Axis.Y, -rotstep, BABYLON.Space.LOCAL);
+                            break;
+                        case "S":
+                            moveVector.z = -movestep;
+                            sphere.moveWithCollisions(moveVector);
+                            break;
+                        case "D":
+                            sphere.rotate(BABYLON.Axis.Y, rotstep, BABYLON.Space.LOCAL);
+                            break;
+                    }
+                };
+
+
+
+                // return the created sceSne
+                return scene;
+            }
+
+            // call the createScene function
+            var scene = createScene();
+
+            // run the render loop
+            engine.runRenderLoop(function () {
+                scene.render();
+            });
+
+            // the canvas/window resize event handler
+            window.addEventListener('resize', function () {
+                engine.resize();
+            });
+        });
+    </script>
+</body>
+
+</html>
